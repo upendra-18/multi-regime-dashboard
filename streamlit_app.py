@@ -171,61 +171,55 @@ if metrics:
     m8.metric("Turnover", metrics.get("turnover"))
 
 # ==========================================================
-# REGIME BACKGROUND OVERLAY (Stable Version)
+# REGIME STRIP (Clean Professional Version)
 # ==========================================================
 
-if history and backtest:
+if history:
 
-    # --- Get backtest data locally (avoid scope issues)
-    dates = pd.to_datetime(backtest["dates"])
-    strategy = backtest["strategy"]
-
-    df_hist = pd.DataFrame({
+    df = pd.DataFrame({
         "Date": pd.to_datetime(history["dates"]),
         "Regime": history["regimes"]
     }).sort_values("Date")
 
-    df_hist["Change"] = df_hist["Regime"] != df_hist["Regime"].shift(1)
-    df_hist["Block"] = df_hist["Change"].cumsum()
+    # Detect regime change blocks
+    df["Change"] = df["Regime"] != df["Regime"].shift(1)
+    df["Block"] = df["Change"].cumsum()
 
     color_map = {
-        "Bull": "rgba(0,200,0,0.2)",
-        "Bear": "rgba(200,0,0,0.2)",
-        "HighVol_Bull": "rgba(255,165,0,0.2)",
-        "HighVol_Bear": "rgba(128,0,128,0.2)"
+        "Bull": "#2ecc71",
+        "Bear": "#e74c3c",
+        "HighVol_Bull": "#f39c12",
+        "HighVol_Bear": "#8e44ad"
     }
 
-    fig_overlay = go.Figure()
+    fig_strip = go.Figure()
 
-    # Strategy line
-    fig_overlay.add_trace(go.Scatter(
-        x=dates,
-        y=strategy,
-        name="Strategy",
-        line=dict(width=2)
-    ))
-
-    # Add regime shading
-    for _, block in df_hist.groupby("Block"):
+    # Draw horizontal strip using line segments
+    for _, block in df.groupby("Block"):
         regime = block["Regime"].iloc[0]
         start = block["Date"].iloc[0]
         end = block["Date"].iloc[-1]
 
-        fig_overlay.add_vrect(
-            x0=start,
-            x1=end,
-            fillcolor=color_map.get(regime, "rgba(100,100,100,0.1)"),
-            line_width=0,
-            layer="below"
-        )
+        fig_strip.add_trace(go.Scatter(
+            x=[start, end],
+            y=[1, 1],
+            mode="lines",
+            line=dict(
+                width=18,
+                color=color_map.get(regime, "#888888")
+            ),
+            showlegend=False
+        ))
 
-    fig_overlay.update_layout(
-        height=500,
-        title="Strategy Performance with Regime Overlay"
+    fig_strip.update_layout(
+        height=130,
+        title="Regime Timeline",
+        yaxis=dict(visible=False),
+        xaxis=dict(title="Date"),
+        margin=dict(l=20, r=20, t=40, b=20)
     )
 
-    st.plotly_chart(fig_overlay, use_container_width=True)
-
+    st.plotly_chart(fig_strip, use_container_width=True)
 # ==========================================================
 # FEATURE IMPORTANCE
 # ==========================================================
