@@ -82,13 +82,20 @@ else:
 if predict:
 
     final = predict["Final_Decision"]
-    raw = predict["Raw_Model_Output"]
 
     regime = final["Regime_Final"]
     exposure = final["Exposure_Fraction"]
     alloc_pct = final["Recommended_Position_%"]
 
-    confidence = max(v[1] for v in raw.values()) * 100
+    raw = predict["Raw_Model_Output"]
+
+    # Extract probability of class 1 safely
+    class1_probs = [
+        v.get("1", v.get(1, 0))  # handles JSON string keys
+        for v in raw.values()
+    ]
+
+    confidence = round(max(class1_probs) * 100, 1)
 
     risk = (
         "High" if "HighVol" in regime
