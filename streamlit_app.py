@@ -89,7 +89,12 @@ if predict:
 
     raw = predict["Raw_Model_Output"]
 
-    confidence = round(max(raw.values()) * 100, 1)
+    class1_probs = [
+        float(v.get("1", 0))   # JSON makes keys strings
+        for v in raw.values()
+    ]
+
+    confidence = round(max(class1_probs) * 100, 1)
 
     risk = (
         "High" if "HighVol" in regime
