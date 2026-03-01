@@ -10,7 +10,7 @@ from plotly.subplots import make_subplots
 import pandas as pd
 import numpy as np
 
-API_BASE = "https://multi-regime-market-state-detection-adaptive-c-production-1c05.up.railway.app/"  
+API_BASE = "https://multi-regime-market-state-detection-adaptive-c-production-1c05.up.railway.app/"
 
 st.set_page_config(layout="wide")
 st.title("Multi-Regime Market State Detection & Capital Allocation System")
@@ -26,7 +26,6 @@ mode = st.sidebar.radio(
     horizontal=False
 )
 
-
 st.sidebar.header("Strategy Controls")
 
 bull_calm = st.sidebar.slider("Bull Calm Exposure", 0.5, 1.5, 1.0)
@@ -34,7 +33,6 @@ bull_turb = st.sidebar.slider("Bull Turbulent Exposure", 0.5, 1.5, 0.9)
 bear_calm = st.sidebar.slider("Bear Calm Exposure", 0.0, 1.0, 0.6)
 bear_turb = st.sidebar.slider("Bear Turbulent Exposure", 0.0, 1.0, 0.2)
 cost = st.sidebar.slider("Transaction Cost (%)", 0.0, 0.5, 0.05)/100
-
 
 # ==========================================================
 # SAFE API CALL
@@ -67,7 +65,7 @@ backtest = safe_get(
 )
 
 # ==========================================================
-# 8️⃣ API STATUS INDICATOR
+# API STATUS
 # ==========================================================
 
 if health:
@@ -76,7 +74,7 @@ else:
     st.error("API Not Responding")
 
 # ==========================================================
-# 1️⃣ LIVE REGIME PANEL
+# LIVE REGIME PANEL
 # ==========================================================
 
 if predict:
@@ -90,7 +88,7 @@ if predict:
     raw = predict["Raw_Model_Output"]
 
     class1_probs = [
-        float(v.get("1", 0))   # JSON makes keys strings
+        float(v.get("1", 0))
         for v in raw.values()
     ]
 
@@ -109,7 +107,7 @@ if predict:
     c4.metric("Model Confidence", f"{confidence}%")
 
 # ==========================================================
-# 2️⃣ ALLOCATION GAUGE
+# ALLOCATION GAUGE
 # ==========================================================
 
 if predict:
@@ -129,7 +127,7 @@ if predict:
     st.plotly_chart(gauge, width="stretch")
 
 # ==========================================================
-# 3️⃣ EQUITY + 4️⃣ DRAWDOWN
+# EQUITY & DRAWDOWN
 # ==========================================================
 
 if backtest:
@@ -154,7 +152,7 @@ if backtest:
     st.plotly_chart(fig, width="stretch")
 
 # ==========================================================
-# 9️⃣ PERFORMANCE METRICS PANEL
+# PERFORMANCE METRICS
 # ==========================================================
 
 if metrics:
@@ -173,7 +171,7 @@ if metrics:
     m8.metric("Turnover", metrics.get("turnover"))
 
 # ==========================================================
-# 5️⃣ REGIME TIMELINE
+# REGIME TIMELINE (FIXED PROFESSIONAL VERSION)
 # ==========================================================
 
 if history:
@@ -183,30 +181,41 @@ if history:
         "Regime": history["regimes"]
     })
 
-    color_map = {
-        "Bull":"green",
-        "Bear":"red",
-        "HighVol_Bull":"orange",
-        "HighVol_Bear":"purple"
-    }
+    # Unique regimes
+    unique_regimes = sorted(df["Regime"].unique())
 
-    df["Color"] = df["Regime"].map(color_map)
+    regime_map = {regime: i for i, regime in enumerate(unique_regimes)}
+
+    df["Regime_Code"] = df["Regime"].map(regime_map)
 
     fig2 = go.Figure()
 
     fig2.add_trace(go.Scatter(
         x=df["Date"],
-        y=[1]*len(df),
+        y=df["Regime_Code"],
         mode="markers",
-        marker=dict(color=df["Color"],size=6),
+        marker=dict(
+            size=6,
+            color=df["Regime_Code"],
+            colorscale="Viridis",
+            showscale=False
+        ),
         showlegend=False
     ))
 
-    fig2.update_layout(height=200,title="Regime Timeline",yaxis=dict(showticklabels=False))
-    st.plotly_chart(fig2,width="stretch")
+    fig2.update_layout(
+        height=300,
+        title="Regime Timeline",
+        yaxis=dict(
+            tickvals=list(regime_map.values()),
+            ticktext=list(regime_map.keys())
+        )
+    )
+
+    st.plotly_chart(fig2, width="stretch")
 
 # ==========================================================
-# 6️⃣ FEATURE IMPORTANCE
+# FEATURE IMPORTANCE
 # ==========================================================
 
 if importance:
@@ -226,7 +235,7 @@ if importance:
     st.plotly_chart(fig3,width="stretch")
 
 # ==========================================================
-# 7️⃣ EXPOSURE DISTRIBUTION (Parameter Sensitivity)
+# EXPOSURE DISTRIBUTION
 # ==========================================================
 
 if backtest:
@@ -239,7 +248,7 @@ if backtest:
         st.plotly_chart(fig4,width="stretch")
 
 # ==========================================================
-# 🔟 SYSTEM ARCHITECTURE
+# SYSTEM ARCHITECTURE
 # ==========================================================
 
 st.markdown("---")
