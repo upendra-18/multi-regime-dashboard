@@ -171,44 +171,57 @@ if metrics:
     m8.metric("Turnover", metrics.get("turnover"))
 
 # ==========================================================
-#  REGIME TIMELINE (Professional Continuous Bands)
-#  ==========================================================
+# REGIME BACKGROUND OVERLAY (Expressive Version)
+# ==========================================================
 
-if history:
+if history and backtest:
 
-    df = pd.DataFrame({
+    df_hist = pd.DataFrame({
         "Date": pd.to_datetime(history["dates"]),
         "Regime": history["regimes"]
     }).sort_values("Date")
 
-    fig2 = go.Figure()
+    df_hist["Change"] = df_hist["Regime"] != df_hist["Regime"].shift(1)
+    df_hist["Block"] = df_hist["Change"].cumsum()
 
-    # Detect regime change points
-    df["Regime_Change"] = df["Regime"] != df["Regime"].shift(1)
-    df["Block"] = df["Regime_Change"].cumsum()
+    color_map = {
+        "Bull": "rgba(0,200,0,0.15)",
+        "Bear": "rgba(200,0,0,0.15)",
+        "HighVol_Bull": "rgba(255,165,0,0.15)",
+        "HighVol_Bear": "rgba(128,0,128,0.15)"
+    }
 
-    # Plot each continuous block as a thick horizontal line
-    for _, block_df in df.groupby("Block"):
+    fig_overlay = go.Figure()
 
-        regime = block_df["Regime"].iloc[0]
+    # Equity line
+    fig_overlay.add_trace(go.Scatter(
+        x=dates,
+        y=strategy,
+        name="Strategy",
+        line=dict(color="white")
+    ))
 
-        fig2.add_trace(go.Scatter(
-            x=block_df["Date"],
-            y=[regime] * len(block_df),
-            mode="lines",
-            line=dict(width=14),
-            name=regime,
-            showlegend=False
-        ))
+    # Regime background shading
+    for _, block in df_hist.groupby("Block"):
 
-    fig2.update_layout(
-        height=250,
-        title="Regime Timeline",
-        yaxis=dict(type="category"),
-        xaxis_title=""
+        regime = block["Regime"].iloc[0]
+        start = block["Date"].iloc[0]
+        end = block["Date"].iloc[-1]
+
+        fig_overlay.add_vrect(
+            x0=start,
+            x1=end,
+            fillcolor=color_map.get(regime, "rgba(100,100,100,0.1)"),
+            opacity=0.4,
+            line_width=0,
+        )
+
+    fig_overlay.update_layout(
+        height=500,
+        title="Strategy Performance with Regime Overlay"
     )
 
-    st.plotly_chart(fig2, width="stretch")
+    st.plotly_chart(fig_overlay, width="stretch")
 
 # ==========================================================
 # FEATURE IMPORTANCE
