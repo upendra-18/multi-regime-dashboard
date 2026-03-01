@@ -88,7 +88,7 @@ if predict:
     exposure = final["Exposure_Fraction"]
     alloc_pct = final["Recommended_Position_%"]
 
-    confidence = round(max(raw.values())*100,1)
+    confidence = max(v[1] for v in raw.values()) * 100
 
     risk = (
         "High" if "HighVol" in regime
