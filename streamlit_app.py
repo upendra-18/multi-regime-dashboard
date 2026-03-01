@@ -46,7 +46,7 @@ def load_prices():
     return df
 
 data = load_prices()
-prices = data["Trend_Strength"].copy()  # proxy for price
+prices = data["Trend_Strength"].copy()
 
 returns = prices.pct_change().fillna(0)
 
@@ -99,7 +99,7 @@ gauge = go.Figure(go.Indicator(
     }
 ))
 
-st.plotly_chart(gauge, use_container_width=True)
+st.plotly_chart(gauge, width="stretch")
 
 # ==========================================================
 # BACKTEST ENGINE
@@ -146,7 +146,7 @@ bh_dd = bh_equity/bh_equity.cummax()-1
 fig.add_trace(go.Scatter(x=dd.index,y=dd,name="Strategy DD"),row=2,col=1)
 fig.add_trace(go.Scatter(x=bh_dd.index,y=bh_dd,name="BH DD"),row=2,col=1)
 
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width="stretch")
 
 # ==========================================================
 # PERFORMANCE METRICS
@@ -187,12 +187,10 @@ st.line_chart(rolling_sharpe)
 
 st.subheader("Regime Timeline")
 timeline = exposure_series.copy()
-colors = ["green" if x>0.7 else "red" if x<0.4 else "yellow" for x in timeline]
-
 st.scatter_chart(pd.DataFrame({"Exposure":timeline}))
 
 # ==========================================================
-# FEATURE IMPORTANCE (Dummy Institutional Placeholder)
+# FEATURE IMPORTANCE
 # ==========================================================
 
 st.subheader("Top 10 Feature Importance")
