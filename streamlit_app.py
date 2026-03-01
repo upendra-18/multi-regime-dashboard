@@ -19,7 +19,7 @@ st.title("Multi-Regime Market State Detection & Capital Allocation System")
 # SIDEBAR CONTROLS
 # ==========================================================
 
-st.sidebar.markdown("## Regime Mode")
+st.sidebar.header("Regime Mode")
 mode = st.sidebar.radio(
     "",
     ["4-Regime", "2-Regime"],
