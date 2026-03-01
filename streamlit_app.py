@@ -27,7 +27,12 @@ bear_calm = st.sidebar.slider("Bear Calm Exposure", 0.0, 1.0, 0.6)
 bear_turb = st.sidebar.slider("Bear Turbulent Exposure", 0.0, 1.0, 0.2)
 cost = st.sidebar.slider("Transaction Cost (%)", 0.0, 0.5, 0.05)/100
 
-mode = st.sidebar.radio("Regime Mode", ["4-Regime", "2-Regime"])
+st.sidebar.markdown("## Regime Mode")
+mode = st.sidebar.radio(
+    "",
+    ["4-Regime", "2-Regime"],
+    horizontal=False
+)
 
 # ==========================================================
 # SAFE API CALL
