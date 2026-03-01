@@ -171,45 +171,41 @@ if metrics:
     m8.metric("Turnover", metrics.get("turnover"))
 
 # ==========================================================
-# REGIME TIMELINE (FIXED PROFESSIONAL VERSION)
-# ==========================================================
+#  REGIME TIMELINE (Professional Continuous Bands)
+#  ==========================================================
 
 if history:
 
     df = pd.DataFrame({
-        "Date": history["dates"],
+        "Date": pd.to_datetime(history["dates"]),
         "Regime": history["regimes"]
-    })
-
-    # Unique regimes
-    unique_regimes = sorted(df["Regime"].unique())
-
-    regime_map = {regime: i for i, regime in enumerate(unique_regimes)}
-
-    df["Regime_Code"] = df["Regime"].map(regime_map)
+    }).sort_values("Date")
 
     fig2 = go.Figure()
 
-    fig2.add_trace(go.Scatter(
-        x=df["Date"],
-        y=df["Regime_Code"],
-        mode="markers",
-        marker=dict(
-            size=6,
-            color=df["Regime_Code"],
-            colorscale="Viridis",
-            showscale=False
-        ),
-        showlegend=False
-    ))
+    # Detect regime change points
+    df["Regime_Change"] = df["Regime"] != df["Regime"].shift(1)
+    df["Block"] = df["Regime_Change"].cumsum()
+
+    # Plot each continuous block as a thick horizontal line
+    for _, block_df in df.groupby("Block"):
+
+        regime = block_df["Regime"].iloc[0]
+
+        fig2.add_trace(go.Scatter(
+            x=block_df["Date"],
+            y=[regime] * len(block_df),
+            mode="lines",
+            line=dict(width=14),
+            name=regime,
+            showlegend=False
+        ))
 
     fig2.update_layout(
-        height=300,
+        height=250,
         title="Regime Timeline",
-        yaxis=dict(
-            tickvals=list(regime_map.values()),
-            ticktext=list(regime_map.keys())
-        )
+        yaxis=dict(type="category"),
+        xaxis_title=""
     )
 
     st.plotly_chart(fig2, width="stretch")
