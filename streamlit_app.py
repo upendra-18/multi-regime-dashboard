@@ -171,10 +171,14 @@ if metrics:
     m8.metric("Turnover", metrics.get("turnover"))
 
 # ==========================================================
-# REGIME BACKGROUND OVERLAY (Expressive Version)
+# REGIME BACKGROUND OVERLAY (Stable Version)
 # ==========================================================
 
 if history and backtest:
+
+    # --- Get backtest data locally (avoid scope issues)
+    dates = pd.to_datetime(backtest["dates"])
+    strategy = backtest["strategy"]
 
     df_hist = pd.DataFrame({
         "Date": pd.to_datetime(history["dates"]),
@@ -185,25 +189,24 @@ if history and backtest:
     df_hist["Block"] = df_hist["Change"].cumsum()
 
     color_map = {
-        "Bull": "rgba(0,200,0,0.15)",
-        "Bear": "rgba(200,0,0,0.15)",
-        "HighVol_Bull": "rgba(255,165,0,0.15)",
-        "HighVol_Bear": "rgba(128,0,128,0.15)"
+        "Bull": "rgba(0,200,0,0.2)",
+        "Bear": "rgba(200,0,0,0.2)",
+        "HighVol_Bull": "rgba(255,165,0,0.2)",
+        "HighVol_Bear": "rgba(128,0,128,0.2)"
     }
 
     fig_overlay = go.Figure()
 
-    # Equity line
+    # Strategy line
     fig_overlay.add_trace(go.Scatter(
         x=dates,
         y=strategy,
         name="Strategy",
-        line=dict(color="white")
+        line=dict(width=2)
     ))
 
-    # Regime background shading
+    # Add regime shading
     for _, block in df_hist.groupby("Block"):
-
         regime = block["Regime"].iloc[0]
         start = block["Date"].iloc[0]
         end = block["Date"].iloc[-1]
@@ -212,8 +215,8 @@ if history and backtest:
             x0=start,
             x1=end,
             fillcolor=color_map.get(regime, "rgba(100,100,100,0.1)"),
-            opacity=0.4,
             line_width=0,
+            layer="below"
         )
 
     fig_overlay.update_layout(
@@ -221,7 +224,7 @@ if history and backtest:
         title="Strategy Performance with Regime Overlay"
     )
 
-    st.plotly_chart(fig_overlay, width="stretch")
+    st.plotly_chart(fig_overlay, use_container_width=True)
 
 # ==========================================================
 # FEATURE IMPORTANCE
