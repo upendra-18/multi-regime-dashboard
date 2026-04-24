@@ -10,7 +10,7 @@ from plotly.subplots import make_subplots
 import pandas as pd
 import numpy as np
 
-API_BASE = "https://multi-regime-market-state-detection-adaptive-c-production-1c05.up.railway.app/"
+API_BASE = "https://multi-regime-market-state-detection-adaptive-c-production-ff5c.up.railway.app/"
 
 st.set_page_config(layout="wide")
 st.title("Multi-Regime Market State Detection & Capital Allocation System")
